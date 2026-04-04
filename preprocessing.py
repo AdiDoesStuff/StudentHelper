@@ -118,22 +118,22 @@ class PreprocessingPipeline:
 
     def run(self):
         """Executes the full pipeline."""
-        print("📥 Loading data...")
+        print("Loading data...")
         acad, beh = self.load_data()
 
-        print("🔍 Detecting lucky guesses (IQR)...")
+        print("Detecting lucky guesses (IQR)...")
         acad = self.detect_lucky_guesses(acad)
 
-        print("⚖️ Scaling time metrics (Min-Max & Z-Score)...")
+        print("Scaling time metrics (Min-Max & Z-Score)...")
         acad = self.scale_metrics(acad)
 
-        print("🩹 Imputing missing behavioural data...")
+        print("Imputing missing behavioural data...")
         beh = self.impute_behavioural(beh)
 
-        print("💾 Saving processed results to database...")
+        print("Saving processed results to database...")
         self.save_to_db(acad, beh)
         
-        print("🚀 Preprocessing Phase 1 Complete!")
+        print("Preprocessing Phase 1 Complete!")
 
 if __name__ == "__main__":
     pipeline = PreprocessingPipeline()

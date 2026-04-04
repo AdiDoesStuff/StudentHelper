@@ -42,7 +42,7 @@ def analyze_kurtosis():
             }
 
     conn.close()
-    print("✅ Module 2: Kurtosis Analysis Complete.")
+    print("Module 2: Kurtosis Analysis Complete.")
     return results
 
 if __name__ == "__main__":

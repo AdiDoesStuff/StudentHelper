@@ -28,7 +28,7 @@ def analyze_environmental_correlation():
     
     # Needs at least 2 data points for correlation
     if len(df) < 2:
-        print("⚠️ Module 3: Not enough session data to compute correlation.")
+        print("Module 3: Not enough session data to compute correlation.")
         return results
 
     # 2. Compute Pearson Correlation for Sleep vs Accuracy
@@ -44,7 +44,7 @@ def analyze_environmental_correlation():
         r_stress, p_stress = pearsonr(df_stress['Stress_Level'], df_stress['Session_Accuracy'])
         results['Stress'] = {"r": round(r_stress, 3), "p": round(p_stress, 3)}
 
-    print("✅ Module 3: Environmental Correlation Analysis Complete.")
+    print("Module 3: Environmental Correlation Analysis Complete.")
     return results
 
 if __name__ == "__main__":

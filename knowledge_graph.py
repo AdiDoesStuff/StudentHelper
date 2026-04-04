@@ -18,7 +18,7 @@ def build_knowledge_graph():
     ]
 
     G.add_edges_from(prerequisites)
-    print("✅ Module 4: Knowledge Graph Built.")
+    print("Module 4: Knowledge Graph Built.")
     return G
 
 def get_root_causes(G, target_topic):

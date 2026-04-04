@@ -36,7 +36,7 @@ def compute_weakness():
     
     conn.commit()
     conn.close()
-    print("✅ Module 1: Weakness Index Updated.")
+    print("Module 1: Weakness Index Updated.")
 
 if __name__ == "__main__":
     compute_weakness()
