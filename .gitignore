@@ -204,3 +204,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# AEGIS-MIND Specific Data
+chroma_db/
+*.pdf
+student_helper.db-shm
+student_helper.db-wal

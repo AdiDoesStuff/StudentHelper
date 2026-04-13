@@ -45,7 +45,7 @@ def get_student_correlation(student_id: int) -> dict:
     return results
 
 
-def run_diagnostics():
+def run_diagnostics(target_student_id: int = None):
     """
     The Final Glue: diagnostics.py
     Runs all modules and generates a consolidated report for EACH student.
@@ -80,9 +80,12 @@ def run_diagnostics():
         print("Error: No profile data found. Run seed_data.py first.")
         return
 
-    # 4. Print a report for every student
+    # 4. Print a report for every student (or only target_student_id if provided)
     for _, student_row in students.iterrows():
         sid  = int(student_row["Student_ID"])
+        if target_student_id is not None and sid != target_student_id:
+            continue
+            
         name = student_row["Student_Name"]
 
         student_profile = profile_all[profile_all["Student_ID"] == sid]

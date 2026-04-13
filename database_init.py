@@ -39,6 +39,24 @@ def init_db():
         FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID)
     );''')
 
+    # 4. QUESTIONS TABLE
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Questions (
+        Question_ID      INTEGER PRIMARY KEY AUTOINCREMENT,
+        Student_ID       INTEGER NOT NULL,
+        Test_ID          INTEGER NOT NULL,
+        Topic_Tag        TEXT NOT NULL,
+        Question_Text    TEXT NOT NULL,
+        Options          TEXT NOT NULL,
+        Correct_Answer   TEXT NOT NULL,
+        Difficulty_Level INTEGER NOT NULL CHECK (Difficulty_Level IN (1, 2, 3)),
+        Was_Asked        INTEGER DEFAULT 0 CHECK (Was_Asked IN (0, 1)),
+        FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID),
+        FOREIGN KEY (Test_ID)    REFERENCES Behavioural_Log (Test_ID)
+    );''')
+
+    cursor.execute('''CREATE INDEX IF NOT EXISTS idx_questions_topic 
+    ON Questions (Student_ID, Topic_Tag, Was_Asked);''')
+
     # 4. ACADEMIC LOG
     cursor.execute('''CREATE TABLE IF NOT EXISTS Academic_Performance_Log (
         Log_ID INTEGER PRIMARY KEY AUTOINCREMENT,
