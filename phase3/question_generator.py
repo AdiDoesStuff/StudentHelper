@@ -15,7 +15,7 @@ def generate_questions(retrieved_chunks, num_questions=5):
         raise ValueError("GEMINI_API_KEY is missing or invalid in the .env file")
         
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         temperature=0.2
     )
 
