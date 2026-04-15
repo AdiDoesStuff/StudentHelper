@@ -5,6 +5,8 @@ This document provides a comprehensive structural breakdown of the `StudentHelpe
 ## 📁 Root Directory (Database & Diagnostic Pipeline)
 The root folder serves as the core diagnostic engine, handling database initialization, data preprocessing, and generating statistical insights about students.
 
+* **`app.py`**
+  * **Role:** The main entry point for the Streamlit-based web application. It configures the user interface and initializes the application state.
 * **`database_init.py`** 
   * **Role:** Initializes the application's underlying SQLite database.
   * **Key Components:** Contains the `init_db` function to orchestrate table creation and relationships.
@@ -34,9 +36,23 @@ The root folder serves as the core diagnostic engine, handling database initiali
 * **`electrostatics_summary.py`** 
   * **Role:** specialized script dedicated to summarizing test or topic metrics around electrostatics (`electrostatics_summary`).
 
+## 📁 Streamlit UI (`pages/`)
+The frontend dashboard environment allowing students to interact with tests and visualize their diagnostics interactively.
+
+* **`1_Dashboard.py`**
+  * **Role:** The primary landing page that displays overall weakness metrics, topic accuracy, and active session statistics using `plotly` charts.
+* **`2_Upload_and_Generate.py`**
+  * **Role:** Interface for collecting pre-session behavioral vitals (sleep, stress), uploading PDF documents, and orchestrating Phase 3 (RAG text extraction and Gemini question generation).
+* **`3_Take_Test.py`**
+  * **Role:** Facilitates active testing. Fetches dynamically generated questions from the DB, records timestamped answers, assesses them against the expected baseline, and updates session logs.
+* **`4_Diagnostic_Report.py`**
+  * **Role:** Comprehensive visual report containing advanced insights like Kurtosis logic, Environmental Correlation parameters, and Knowledge Graph topic hierarchies mapping out root causes.
+
 ## 📁 phase3/ (The RAG Pipeline)
 The phase3 directory acts as the Retrieval-Augmented Generation environment. It ingests custom PDF textbooks to formulate targeted Multiple Choice Questions (MCQs).
 
+* **`__init__.py`**
+  * **Role:** Denotes the `phase3` directory as a python package.
 * **`ocr_extractor.py`**
   * **Role:** The entry point for PDF ingestion; converts documents into raw text (`extract_text`).
 * **`chunker.py`** 
@@ -51,10 +67,14 @@ The phase3 directory acts as the Retrieval-Augmented Generation environment. It 
   * **Role:** The primary orchestrator script for Phase 3 combining extraction, embedding, retrieval, and generation (`run_pipeline`).
 * **Auxiliaries (`generate_test_pdf.py`, `test_embed.py`)** 
   * **Role:** Helper utilities for bootstrapping local testing pdfs and verifying the embedding layers functionality.
+* **Sample PDFs (`test_electrostatics.pdf`, `test_linear_algebra.pdf`)**
+  * **Role:** Baseline mock educational documents for testing RAG extraction capabilities.
 
 ## 📁 phase4/ (Agent Logic & Test Flow)
 This folder manages test sessions (AEGIS-MIND logic). It's responsible for interacting with the student, monitoring their performance, and serving the diagnostic tests.
 
+* **`__init__.py`**
+  * **Role:** Denotes the `phase4` directory as a python package.
 * **`agent.py`** 
   * **Role:** The core decision engine coordinating the tutor agent flow. 
   * **Key Components:** Evaluates target weaknesses (`get_weakest_topic`), takes behavioral readings (`collect_pre_session_vitals`), and wraps everything in `run_agent_session`.
@@ -67,5 +87,6 @@ This folder manages test sessions (AEGIS-MIND logic). It's responsible for inter
 
 ## 📁 Miscellanea / Context Directories
 * **`.gitignore` & `.env`**: Version control masks and environment boundaries (secrets/keys like Gemini).
+* **`requirements.txt`**: Records the comprehensive list of python dependencies required for running AEGIS-MIND.
 * **`student_helper.db` & `chroma_db/`**: Your permanent relational SQLite structure and the local Vector store directory holding document embeddings.
 * **`README.md` & `Tutorial .md's/Testing_Guide.md`**: Guidebooks for installing, analyzing capabilities, and executing module tests in chronological order.

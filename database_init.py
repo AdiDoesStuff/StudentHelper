@@ -74,6 +74,15 @@ def init_db():
         FOREIGN KEY (Student_ID, Topic_Tag) REFERENCES Student_Profile (Student_ID, Topic_Tag)
     );''')
 
+    # 6. SYLLABUS TOPICS TABLE
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Syllabus_Topics (
+        Subject_Name TEXT NOT NULL,
+        Unit_Number  INTEGER NOT NULL,
+        Topic_Name   TEXT NOT NULL,
+        Topic_Order  INTEGER NOT NULL,
+        PRIMARY KEY (Subject_Name, Unit_Number, Topic_Order)
+    );''')
+
     conn.commit()
     conn.close()
     print('database ready')
