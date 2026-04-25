@@ -31,14 +31,14 @@ if "test_complete" not in st.session_state:
     st.session_state["test_complete"] = False
 
 test_id = st.session_state.get("current_test_id")
-topic_tag = st.session_state.get("current_topic")
+# topic_tag is now fetched per-question
 
 # Load Questions
 if "loaded_questions" not in st.session_state:
     conn = sqlite3.connect("student_helper.db")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT Question_ID, Question_Text, Options, Correct_Answer, Difficulty_Level
+        SELECT Question_ID, Question_Text, Options, Correct_Answer, Difficulty_Level, Topic_Tag
         FROM Questions 
         WHERE Test_ID = ? AND Was_Asked = 0 
         ORDER BY Question_ID ASC
@@ -53,7 +53,8 @@ if "loaded_questions" not in st.session_state:
             "Question_Text": r[1],
             "options": json.loads(r[2]),
             "Correct_Answer": r[3],
-            "Difficulty_Level": r[4]
+            "Difficulty_Level": r[4],
+            "Topic_Tag": r[5]
         })
     st.session_state["loaded_questions"] = questions
 
@@ -64,7 +65,7 @@ if total_questions == 0:
     st.warning("No unasked questions found for this test. Maybe you already completed it?")
     if st.button("Start New Session"):
         st.session_state.clear()
-        st.switch_page("pages/2_Upload_and_Generate.py")
+        st.switch_page("pages/4_Generate_Test.py")
     st.stop()
 
 if not st.session_state["test_complete"]:
@@ -97,7 +98,7 @@ if not st.session_state["test_complete"]:
                     st.session_state["test_answers"].append({
                         "student_id": student_id,
                         "test_id": test_id,
-                        "topic_tag": topic_tag,
+                        "topic_tag": q_data["Topic_Tag"],
                         "question_id": q_data["Question_ID"],
                         "outcome": outcome,
                         "time_spent_seconds": time_spent,
@@ -170,8 +171,8 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button("View Diagnostic Report →"):
-            st.switch_page("pages/4_Diagnostic_Report.py")
+            st.switch_page("pages/6_Diagnostic_Report.py")
     with col2:
         if st.button("Start New Session"):
             st.session_state.clear()
-            st.switch_page("pages/2_Upload_and_Generate.py")
+            st.switch_page("pages/4_Generate_Test.py")
