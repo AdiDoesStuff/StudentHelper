@@ -6,9 +6,9 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 
-from kurtosis_analysis import analyze_kurtosis
-from knowledge_graph import build_knowledge_graph, get_root_causes
-from diagnostics import get_student_correlation
+from core.analytics.kurtosis_analysis import analyze_kurtosis
+from core.analytics.knowledge_graph import build_knowledge_graph, get_root_causes
+from core.analytics.diagnostics import get_student_correlation
 
 st.set_page_config(page_title="Diagnostic Report - AEGIS-MIND", layout="wide")
 

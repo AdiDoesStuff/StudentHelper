@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import streamlit as st
 import sqlite3
 import pandas as pd
-from syllabus_parser import parse_unit_text, store_syllabus, load_syllabus_edges
+from core.syllabus.syllabus_parser import parse_unit_text, store_syllabus, load_syllabus_edges
 
 st.set_page_config(page_title="Syllabus Mapping - AEGIS-MIND", layout="wide")
 

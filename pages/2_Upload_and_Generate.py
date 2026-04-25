@@ -2,63 +2,72 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
-import time
-from phase3.pipeline import run_pipeline
-from phase4.question_store import store_questions
-from phase4.session_logger import create_session
+import sqlite3
+import pandas as pd
+from core.generator.pipeline import process_and_store_documents
 
-st.set_page_config(page_title="Upload & Generate - AEGIS-MIND", layout="wide")
+st.set_page_config(page_title="Upload & Sort - AEGIS-MIND", layout="wide")
 
-student_id = st.session_state.get("student_id", 1)
+st.title("Upload & Sort Material")
+st.markdown("Upload multiple PDFs and automatically sort their contents into your syllabus topics using local AI.")
 
-st.title("Upload Material & Generate Test")
+# Fetch available subjects
+@st.cache_data
+def get_subjects():
+    try:
+        conn = sqlite3.connect("student_helper.db")
+        df = pd.read_sql_query("SELECT DISTINCT Subject_Name FROM Syllabus_Topics ORDER BY Subject_Name", conn)
+        conn.close()
+        return df["Subject_Name"].tolist()
+    except Exception:
+        return []
 
-# Section 1 - Pre-Session Vitals
-st.header("Pre-Session Vitals")
-sleep_hours = st.slider("How many hours did you sleep?", 0.0, 12.0, 7.0, step=0.5)
-stress_level = st.slider("Current stress level", 1, 10, 5)
+subjects = get_subjects()
 
-st.session_state["sleep_hours"] = sleep_hours
-st.session_state["stress_level"] = stress_level
+if not subjects:
+    st.info("No syllabus data found. Please go to 'Syllabus Mapping' to add a subject first.")
+    st.stop()
 
-# Section 2 - PDF Upload
-st.header("Upload Document")
-uploaded_file = st.file_uploader("Upload your notes PDF", type=["pdf"])
-topic_tag = st.text_input("Topic Tag (e.g. Electrostatics)")
+# Section 1 - Subject Selection
+st.header("1. Select Subject")
+selected_subject = st.selectbox("Which subject are these materials for?", subjects)
 
-# Section 3 - Generate Button
-if st.button("Generate Questions"):
-    if not uploaded_file:
-        st.warning("Please upload a PDF.")
-        st.stop()
-    if not topic_tag:
-        st.warning("Please enter a Topic Tag.")
+# Section 2 - Multiple PDF Upload
+st.header("2. Upload Documents")
+uploaded_files = st.file_uploader("Upload your notes/slides (PDF)", type=["pdf"], accept_multiple_files=True)
+
+# Section 3 - Process Button
+if st.button("Process & Sort Documents", type="primary"):
+    if not uploaded_files:
+        st.warning("Please upload at least one PDF.")
         st.stop()
         
-    pdf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "temp_uploaded.pdf")
-    with open(pdf_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    temp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "temp_uploads")
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    saved_paths = []
+    for file in uploaded_files:
+        path = os.path.join(temp_dir, file.name)
+        with open(path, "wb") as f:
+            f.write(file.getbuffer())
+        saved_paths.append(path)
         
-    test_id = int(time.time())
-    st.session_state["current_test_id"] = test_id
-    st.session_state["current_topic"] = topic_tag
-    
-    with st.spinner("Initializing session..."):
-        create_session(student_id, test_id, sleep_hours, stress_level)
-    
-    with st.spinner("Analyzing PDF and generating questions via Gemini..."):
+    with st.spinner(f"Processing {len(saved_paths)} document(s). The first run will download an 80MB local AI model. Please be patient..."):
         try:
-            questions = run_pipeline(pdf_path, topic_tag)
-        except Exception as e:
-            st.error(f"Failed during generation: {str(e)}")
-            st.stop()
+            summary = process_and_store_documents(saved_paths, selected_subject)
+            st.success("Documents successfully processed, sorted, and stored!")
             
-    with st.spinner("Storing questions into database..."):
-        store_questions(questions, student_id, test_id, topic_tag)
-        st.session_state["questions_ready"] = True
-        
-    st.success(f"5 questions generated for {topic_tag}. Head to Take Test to begin.")
-    
-if st.session_state.get("questions_ready"):
-    if st.button("Go to Test →"):
-        st.switch_page("pages/3_Take_Test.py")
+            st.subheader("Classification Summary")
+            # Convert summary to dataframe for nice display
+            df_summary = pd.DataFrame(list(summary.items()), columns=["Topic", "Chunks Extracted"])
+            st.dataframe(df_summary, use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"Failed during processing: {str(e)}")
+            
+    # Cleanup temp files
+    for path in saved_paths:
+        try:
+            os.remove(path)
+        except:
+            pass

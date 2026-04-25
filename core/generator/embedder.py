@@ -1,19 +1,15 @@
 import os
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from dotenv import load_dotenv
 
 def embed_and_store(documents):
     """
-    Takes LangChain Documents, embeds them using Gemini, 
+    Takes LangChain Documents, embeds them using a local model, 
     and stores them persistently in ChromaDB.
     """
-    load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "your_key_here":
-        raise ValueError("GEMINI_API_KEY is missing or invalid in the .env file")
-        
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+    # Using the same local model we use for classification!
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     
     # Initialize/connect to Chroma persistent storage
     vectorstore = Chroma(

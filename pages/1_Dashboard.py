@@ -5,7 +5,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import plotly.express as px
-from phase4.agent import get_weakest_topic
+from core.runner.agent import get_weakest_topic
 
 st.set_page_config(page_title="Dashboard - AEGIS-MIND", layout="wide")
 

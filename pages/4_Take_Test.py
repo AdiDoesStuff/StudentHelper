@@ -5,9 +5,9 @@ import streamlit as st
 import time, datetime, io, contextlib
 import sqlite3, json
 
-from phase4.session_logger import log_answers
-from preprocessing import PreprocessingPipeline
-from diagnostics import run_diagnostics
+from core.runner.session_logger import log_answers
+from core.analytics.preprocessing import PreprocessingPipeline
+from core.analytics.diagnostics import run_diagnostics
 
 st.set_page_config(page_title="Take Test - AEGIS-MIND", layout="wide")
 

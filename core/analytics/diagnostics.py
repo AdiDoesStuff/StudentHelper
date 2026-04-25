@@ -1,9 +1,9 @@
 import sqlite3
 import pandas as pd
-from weakness_index import compute_weakness
-from kurtosis_analysis import analyze_kurtosis
-from environmental_correlation import analyze_environmental_correlation
-from knowledge_graph import build_knowledge_graph, get_root_causes
+from core.analytics.weakness_index import compute_weakness
+from core.analytics.kurtosis_analysis import analyze_kurtosis
+from core.analytics.environmental_correlation import analyze_environmental_correlation
+from core.analytics.knowledge_graph import build_knowledge_graph, get_root_causes
 
 
 def get_student_correlation(student_id: int) -> dict:

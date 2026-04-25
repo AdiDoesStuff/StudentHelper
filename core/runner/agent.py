@@ -4,15 +4,15 @@ import time
 import datetime
 import sqlite3
 
-# Add parent to path so phase3 and phase4 imports work
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add root directory to path so core imports work
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from phase3.pipeline import run_pipeline
-from phase4.question_store import store_questions
-from phase4.session_logger import create_session, log_answers
-from phase4.test_runner import run_test
-from preprocessing import PreprocessingPipeline
-from diagnostics import run_diagnostics
+from core.generator.pipeline import run_pipeline
+from core.runner.question_store import store_questions
+from core.runner.session_logger import create_session, log_answers
+from core.runner.test_runner import run_test
+from core.analytics.preprocessing import PreprocessingPipeline
+from core.analytics.diagnostics import run_diagnostics
 
 def get_weakest_topic(student_id: int) -> str:
     conn = sqlite3.connect("student_helper.db")
@@ -96,7 +96,7 @@ def run_agent_session(student_id: int, custom_topic: str = None, custom_pdf_path
             return
     else:
         pdf_filename = f"test_{topic_tag.lower().replace(' ', '_')}.pdf"
-        pdf_path = os.path.join("phase3", pdf_filename)
+        pdf_path = os.path.join("core", "generator", pdf_filename)
         
         if not os.path.exists(pdf_path):
             print(f"Generating notes PDF for {topic_tag}...")

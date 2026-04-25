@@ -1,5 +1,5 @@
 import streamlit as st
-from database_init import init_db
+from core.db.database_init import init_db
 import sqlite3
 
 st.set_page_config(page_title="AEGIS-MIND", layout="wide")

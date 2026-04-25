@@ -1,6 +1,16 @@
 import sqlite3
 import random
-from database_init import init_db
+import os
+import sys
+
+# Ensure root directory is in sys.path so 'core...' imports work when running directly
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+grandparent_dir = os.path.dirname(parent_dir)
+if grandparent_dir not in sys.path:
+    sys.path.insert(0, grandparent_dir)
+
+from core.db.database_init import init_db
 
 def seed_data():
     init_db()

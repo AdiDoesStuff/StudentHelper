@@ -11,7 +11,7 @@ def build_knowledge_graph(db_path: str = "student_helper.db"):
     Reads prerequisite edges from the Syllabus_Topics table in the database.
     Falls back gracefully to an empty graph if no syllabus data exists.
     """
-    from syllabus_parser import load_syllabus_edges
+    from core.syllabus.syllabus_parser import load_syllabus_edges
 
     G = nx.DiGraph()
 

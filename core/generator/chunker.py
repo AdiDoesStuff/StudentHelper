@@ -1,10 +1,10 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-def chunk_text(pages_data, topic_tag):
+def chunk_text(pages_data):
     """
     Splits text from pages into roughly 500-word chunks (approx 2000 chars)
-    with a small overlap, tagging each chunk with the topic_tag and page number.
+    with a small overlap, tagging each chunk with the page number.
     Returns a list of Langchain Document objects.
     """
     splitter = RecursiveCharacterTextSplitter(
@@ -28,8 +28,7 @@ def chunk_text(pages_data, topic_tag):
             doc = Document(
                 page_content=chunk,
                 metadata={
-                    "page": page.get("page"),
-                    "Topic_Tag": topic_tag
+                    "page": page.get("page")
                 }
             )
             documents.append(doc)

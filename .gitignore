@@ -210,3 +210,6 @@ chroma_db/
 *.pdf
 student_helper.db-shm
 student_helper.db-wal
+
+# Documentation
+docs/
