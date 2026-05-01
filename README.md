@@ -43,7 +43,7 @@ AEGIS-MIND (StudentHelper) is an intelligent, local-first learning platform desi
 | **Analytics** | SciPy, NetworkX |
 | **Storage** | SQLite (Relational), ChromaDB (Vector) |
 | **AI (Local)** | Sentence-Transformers (all-MiniLM-L6-v2) |
-| **AI (Cloud)** | Google Gemini (MCQ Generation) |
+| **AI (Cloud)** | Google Gemini & Groq (Llama 3.3 70B) |
 
 ---
 
@@ -64,7 +64,8 @@ pip install -r requirements.txt
 ### 2. Configuration
 Create a `.env` file in the root:
 ```env
-GEMINI_API_KEY=your_key_here
+GEMINI_API_KEY=your_gemini_key_here
+GROQ_API_KEY=your_groq_key_here
 ```
 
 ### 3. Launch
@@ -77,7 +78,7 @@ streamlit run app.py
 ## 📂 Project Architecture
 
 - **`core/analytics`**: Statistical engines (kurtosis, correlation, weakness index).
-- **`core/generator`**: Local AI classifier, RAG retrieval, and MCQ generation.
+- **`core/generator`**: Local AI classifier, RAG retrieval, and Multi-Model MCQ generation (Gemini/Groq).
 - **`core/runner`**: Test execution and high-fidelity session logging.
 - **`core/syllabus`**: Prerequisite mapping and hierarchy parsing.
 - **`pages/`**: The multi-stage diagnostic dashboard and study interface.
@@ -85,4 +86,4 @@ streamlit run app.py
 ---
 
 ## 🛡️ Privacy & Performance
-AEGIS-MIND prioritizes privacy and efficiency. All document processing, topic classification, and embedding storage occur **locally**. Cloud AI is utilized strictly for high-reasoning tasks like question generation, ensuring minimal token usage and maximum data control.
+AEGIS-MIND prioritizes privacy and efficiency. All document processing, topic classification, and embedding storage occur **locally**. Cloud AI (Google Gemini or Groq/Llama) is utilized strictly for high-reasoning tasks like question generation, ensuring minimal token usage and maximum data control. The platform now supports an **AI Addon** feature, allowing users to toggle between providers for their test generation.
