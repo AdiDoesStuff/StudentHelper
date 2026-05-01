@@ -4,6 +4,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
 
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
 def _extract_json_array(raw_text: str) -> str:
     """
     Extract the first valid JSON array substring from model output.
@@ -86,55 +88,55 @@ def _normalize_question(item: dict):
         "difficulty": normalized_difficulty,
     }
 
-def generate_questions(retrieved_chunks, num_questions=5):
+def generate_questions(retrieved_chunks, num_questions=5, ai_provider="Gemini"):
     """
-    Takes a list of retrieved chunks, feeds them into Gemini 1.5 Flash,
+    Takes a list of retrieved chunks, calls the selected AI provider,
     and returns a structured list of dictionaries representing MCQs.
+    Supported providers: "Gemini", "Groq (Llama 3.3 70B)"
     """
     load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or api_key == "your_key_here":
-        raise ValueError("GEMINI_API_KEY is missing or invalid in the .env file")
-        
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash-lite",
-        temperature=0.2
+
+    use_groq = ai_provider == "Groq (Llama 3.3 70B)"
+
+    context_text = "\n\n".join([f"Page {doc.metadata.get('page', '?')}:\n{doc.page_content}" for doc in retrieved_chunks])
+
+    PROMPT_TEMPLATE = (
+        "You are an expert educator. Given the following specific context extracted from a student's textbook or notes, "
+        "generate {num_questions} Multiple Choice Questions (MCQs) that test understanding of this material.\n\n"
+        "Context:\n{context}\n\n"
+        "Format your output STRICTLY as a JSON list of dictionaries. Do not include any markdown formatting like ```json or any other text before/after the JSON.\n"
+        "Each dictionary MUST have these exact keys:\n"
+        '- "question": The actual question text.\n'
+        '- "options": A list of exactly 4 strings, representing the options (e.g. ["A) ...", "B) ...", "C) ...", "D) ..."]).\n'
+        '- "correct_answer": The exact string of the correct option (e.g. "A").\n'
+        '- "difficulty": An integer representing difficulty: 1 (easy), 2 (medium), or 3 (hard).\n'
     )
+    prompt_text = PROMPT_TEMPLATE.format(num_questions=num_questions, context=context_text)
 
-    context_text = "\\n\\n".join([f"Page {doc.metadata.get('page', '?')}:\\n{doc.page_content}" for doc in retrieved_chunks])
-    
-    prompt = PromptTemplate.from_template('''
-You are an expert educator. Given the following specific context extracted from a student's textbook or notes, generate {num_questions} Multiple Choice Questions (MCQs) that test understanding of this material.
-
-Context:
-{context}
-
-Format your output STRICTLY as a JSON list of dictionaries. Do not include any markdown formatting like ```json or any other text before/after the JSON. 
-Each dictionary MUST have these exact keys:
-- "question": The actual question text.
-- "options": A list of exactly 4 strings, representing the options (e.g. ["A) ...", "B) ...", "C) ...", "D) ..."]).
-- "correct_answer": The exact string of the correct option (e.g. "A").
-- "difficulty": An integer representing difficulty: 1 (easy), 2 (medium), or 3 (hard).
-
-Example Output:
-[
-  {{
-    "question": "What is the capital of France?",
-    "options": ["A) Berlin", "B) Madrid", "C) Paris", "D) Rome"],
-    "correct_answer": "C",
-    "difficulty": 1
-  }}
-]
-''')
-
-    chain = prompt | llm
-    
-    response = chain.invoke({
-        "num_questions": num_questions,
-        "context": context_text
-    })
-
-    output_text = response.content.strip()
+    if use_groq:
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key or groq_key == "your_groq_api_key_here":
+            raise ValueError("GROQ_API_KEY is missing or invalid in the .env file")
+        try:
+            from groq import Groq
+        except ImportError:
+            raise ImportError("groq package is not installed. Run: pip install groq")
+        client = Groq(api_key=groq_key)
+        completion = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt_text}],
+            temperature=0.2,
+        )
+        output_text = completion.choices[0].message.content.strip()
+    else:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key or api_key == "your_key_here":
+            raise ValueError("GEMINI_API_KEY is missing or invalid in the .env file")
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.2)
+        prompt = PromptTemplate.from_template("{prompt_text}")
+        chain = prompt | llm
+        response = chain.invoke({"prompt_text": prompt_text})
+        output_text = response.content.strip()
 
     try:
         json_array_text = _extract_json_array(output_text)

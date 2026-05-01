@@ -5,7 +5,7 @@ from core.generator.rag_engine import retrieve_chunks
 from core.generator.question_generator import generate_questions
 from core.runner.session_logger import create_session
 
-def build_test(student_id: int, subject: str, topics: list, num_questions: int, sleep_hours: float, stress_level: int) -> int:
+def build_test(student_id: int, subject: str, topics: list, num_questions: int, sleep_hours: float, stress_level: int, ai_provider: str = "Gemini") -> int:
     """
     Distributes num_questions across the provided topics.
     For each topic, retrieves chunks via RAG, generates questions via LLM.
@@ -33,7 +33,7 @@ def build_test(student_id: int, subject: str, topics: list, num_questions: int, 
         if count == 0:
             continue
             
-        chunks = retrieve_chunks(topic, k=min(count * 2, 10)) # get more context
+        chunks = retrieve_chunks(topic, k=min(max(count * 3, 6), 15)) # Ensure at least 6 chunks, up to 15
         
         # In case we can't get any chunks, skip
         if not chunks:
@@ -41,7 +41,7 @@ def build_test(student_id: int, subject: str, topics: list, num_questions: int, 
             
         # Call generate questions
         try:
-            generated = generate_questions(chunks, num_questions=count)
+            generated = generate_questions(chunks, num_questions=count, ai_provider=ai_provider)
             # Add topic info to each question so we can store it properly
             for q in generated:
                 q['topic_tag'] = topic

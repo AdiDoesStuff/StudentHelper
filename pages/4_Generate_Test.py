@@ -64,6 +64,15 @@ with col5:
     stress_level = st.slider("Current Stress Level (1-10)", min_value=1, max_value=10, value=5, help="1 = Very Relaxed, 10 = Very Stressed.")
 
 st.markdown("---")
+st.subheader("AI Provider")
+
+AI_PROVIDERS = ["Gemini", "Groq (Llama 3.3 70B)"]
+ai_provider = st.radio(
+    "Choose the AI model to generate your questions:",
+    AI_PROVIDERS,
+    horizontal=True,
+    help="Gemini uses Google's Gemini 2.5 Flash Lite. Groq uses Meta's Llama 3.3 70B via Groq's fast inference API."
+)
 
 if st.button("Generate Test", type="primary"):
     if not selected_topics:
@@ -72,7 +81,7 @@ if st.button("Generate Test", type="primary"):
         
     student_id = st.session_state.get("student_id", 1)
         
-    with st.spinner(f"Retrieving study materials and generating {num_questions} questions using Gemini AI. This may take a minute..."):
+    with st.spinner(f"Retrieving study materials and generating {num_questions} questions using {ai_provider}. This may take a minute..."):
         try:
             test_id = build_test(
                 student_id=student_id,
@@ -80,7 +89,8 @@ if st.button("Generate Test", type="primary"):
                 topics=selected_topics,
                 num_questions=num_questions,
                 sleep_hours=sleep_hours,
-                stress_level=stress_level
+                stress_level=stress_level,
+                ai_provider=ai_provider
             )
             
             # Setup session state for the Take Test page

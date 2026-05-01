@@ -51,7 +51,7 @@ def process_and_store_documents(pdf_paths, subject_name):
         doc.metadata["Subject_Name"] = subject_name
         doc.metadata["Topic_Tag"] = assigned_topics[i]
         
-    # 4. Store in ChromaDB (uses Gemini embedding for storage so RAG still works)
+    # 4. Store in ChromaDB (uses local sentence-transformers embeddings)
     print("Embedding and storing classified chunks into ChromaDB...")
     embed_and_store(all_chunks)
     

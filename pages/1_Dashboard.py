@@ -79,18 +79,31 @@ st.dataframe(display_df, use_container_width=True)
 
 # Section 4 - Session Stats
 st.header("Overall Session Stats")
-total_sessions = profile_df["Total_Sessions"].sum()
-overall_acc = profile_df["Average_Accuracy"].mean()
+
+conn = sqlite3.connect("student_helper.db")
+# Fetch accurate counts directly from raw logs
+total_sessions = pd.read_sql_query(
+    "SELECT COUNT(*) FROM Behavioural_Log WHERE Student_ID = ?", 
+    conn, params=(student_id,)
+).iloc[0, 0]
+
+overall_acc = pd.read_sql_query(
+    "SELECT AVG(Outcome) FROM Academic_Performance_Log WHERE Student_ID = ?", 
+    conn, params=(student_id,)
+).iloc[0, 0]
+
+latest_date_str = pd.read_sql_query(
+    "SELECT MAX(Session_Date) FROM Behavioural_Log WHERE Student_ID = ?", 
+    conn, params=(student_id,)
+).iloc[0, 0]
+conn.close()
 
 # Days since last test math
-if profile_df['Last_Tested_Date'].dropna().empty:
+if not latest_date_str:
     days_since_str = "N/A"
 else:
-    # Get latest date across all topics
-    latest_date_str = profile_df['Last_Tested_Date'].dropna().max()
     try:
         latest_date = pd.to_datetime(latest_date_str)
-        # Assuming current timezone is naive or dealing with dates directly
         days_since = (pd.Timestamp.now() - latest_date).days
         days_since_str = str(days_since)
     except Exception:
