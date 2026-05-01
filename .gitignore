@@ -213,3 +213,7 @@ student_helper.db-wal
 
 # Documentation
 docs/
+
+# Temporary and Scratch files
+temp_uploads/
+scratch/
