@@ -50,6 +50,8 @@ def init_db():
         Correct_Answer   TEXT NOT NULL,
         Difficulty_Level INTEGER NOT NULL CHECK (Difficulty_Level IN (1, 2, 3)),
         Was_Asked        INTEGER DEFAULT 0 CHECK (Was_Asked IN (0, 1)),
+        Source           TEXT DEFAULT 'internal',
+        External_Test_ID TEXT,
         FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID),
         FOREIGN KEY (Test_ID)    REFERENCES Behavioural_Log (Test_ID)
     );''')
@@ -87,5 +89,28 @@ def init_db():
     conn.close()
     print('database ready')
 
+def migrate_db():
+    """Safely add new columns to existing tables without data loss."""
+    conn = sqlite3.connect("student_helper.db")
+    cursor = conn.cursor()
+
+    migrations = [
+        ("Questions", "Source", "TEXT DEFAULT 'internal'"),
+        ("Questions", "External_Test_ID", "TEXT"),
+    ]
+
+    for table, column, col_def in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_def}")
+            print(f"  Added column {table}.{column}")
+        except sqlite3.OperationalError:
+            # Column already exists — safe to ignore
+            pass
+
+    conn.commit()
+    conn.close()
+    print("Migration complete.")
+
 if __name__ == "__main__":
     init_db()
+    migrate_db()

@@ -20,8 +20,18 @@ class PreprocessingPipeline:
         """
         Step 1: IQR Guess Detection.
         Flags correct answers that were completed suspiciously fast based on difficulty level.
+        Rows with no timing data (e.g. Evalify imports) are excluded from detection.
         """
         df = df.copy()
+
+        # Separate timed vs untimed rows (Evalify imports have NULL time)
+        timed_mask = df["Time_Spent_Seconds"].notna()
+        untimed_df = df[~timed_mask].copy()
+        df = df[timed_mask].copy()
+
+        # Untimed rows cannot be lucky guesses
+        untimed_df["Is_Lucky_Guess"] = 0
+
         df["Is_Lucky_Guess"] = 0  # Default to 'Not a guess'
 
         for difficulty in df["Difficulty_Level"].unique():
@@ -46,30 +56,42 @@ class PreprocessingPipeline:
         hard_floor_mask = (df["Outcome"] == 1) & (df["Time_Spent_Seconds"] < 2.0)
         df.loc[hard_floor_mask, "Is_Lucky_Guess"] = 1
 
-        return df
+        return pd.concat([df, untimed_df], ignore_index=True)
 
     def scale_metrics(self, df):
         """
         Step 2 & 3: Normalization and Standardization.
         Prepares Time_Spent_Seconds for future ML processing.
+        Rows with no timing data are left unscaled.
         """
         df = df.copy()
-        
-        # Min-Max Normalization (Scale: 0 to 1)
-        t_min, t_max = df["Time_Spent_Seconds"].min(), df["Time_Spent_Seconds"].max()
-        if t_max != t_min:
-            df["Time_Norm"] = (df["Time_Spent_Seconds"] - t_min) / (t_max - t_min)
-        else:
-            df["Time_Norm"] = 0
 
-        # Z-Score Standardization (Mean=0, Std=1)
-        t_mean, t_std = df["Time_Spent_Seconds"].mean(), df["Time_Spent_Seconds"].std()
-        if t_std > 0:
-            df["Time_Z"] = (df["Time_Spent_Seconds"] - t_mean) / t_std
-        else:
-            df["Time_Z"] = 0
-            
-        return df
+        # Only scale rows that have timing data
+        timed_mask = df["Time_Spent_Seconds"].notna()
+        timed_df = df[timed_mask].copy()
+        untimed_df = df[~timed_mask].copy()
+
+        if not timed_df.empty:
+            # Min-Max Normalization (Scale: 0 to 1)
+            t_min, t_max = timed_df["Time_Spent_Seconds"].min(), timed_df["Time_Spent_Seconds"].max()
+            if t_max != t_min:
+                timed_df["Time_Norm"] = (timed_df["Time_Spent_Seconds"] - t_min) / (t_max - t_min)
+            else:
+                timed_df["Time_Norm"] = 0
+
+            # Z-Score Standardization (Mean=0, Std=1)
+            t_mean, t_std = timed_df["Time_Spent_Seconds"].mean(), timed_df["Time_Spent_Seconds"].std()
+            if t_std > 0:
+                timed_df["Time_Z"] = (timed_df["Time_Spent_Seconds"] - t_mean) / t_std
+            else:
+                timed_df["Time_Z"] = 0
+
+        # Untimed rows get NaN for scaled columns
+        if not untimed_df.empty:
+            untimed_df["Time_Norm"] = None
+            untimed_df["Time_Z"] = None
+
+        return pd.concat([timed_df, untimed_df], ignore_index=True)
 
     def impute_behavioural(self, df):
         """
