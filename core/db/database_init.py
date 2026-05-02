@@ -85,6 +85,45 @@ def init_db():
         PRIMARY KEY (Subject_Name, Unit_Number, Topic_Order)
     );''')
 
+    # 7. STUDY AVAILABILITY
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Study_Availability (
+        Availability_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Student_ID INTEGER NOT NULL,
+        Day_of_Week TEXT NOT NULL, 
+        Start_Time TEXT, 
+        End_Time TEXT,
+        FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID)
+    );''')
+
+    # 8. WEEKLY TEST SCHEDULE
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Weekly_Test_Schedule (
+        Schedule_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Student_ID INTEGER NOT NULL,
+        Subject_Name TEXT NOT NULL,
+        Day_of_Week TEXT NOT NULL,
+        FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID)
+    );''')
+
+    # 9. TEST INSTANCES
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Test_Instances (
+        Instance_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Student_ID INTEGER NOT NULL,
+        Subject_Name TEXT NOT NULL,
+        Test_Date TEXT NOT NULL, 
+        Is_Imported INTEGER DEFAULT 0 CHECK (Is_Imported IN (0, 1)),
+        FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID)
+    );''')
+
+    # 10. STUDY PLAN STATE
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Study_Plan_State (
+        Plan_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Student_ID INTEGER NOT NULL,
+        Generated_Date TEXT NOT NULL, 
+        Plan_JSON TEXT NOT NULL, 
+        Valid_Until TEXT, 
+        FOREIGN KEY (Student_ID) REFERENCES Students (Student_ID)
+    );''')
+
     conn.commit()
     conn.close()
     print('database ready')

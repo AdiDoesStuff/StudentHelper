@@ -94,3 +94,78 @@ def build_test(student_id: int, subject: str, topics: list, num_questions: int, 
     conn.close()
     
     return test_id
+
+def build_revision_test(student_id: int, subject: str, topics: list, num_questions: int, sleep_hours: float, stress_level: int) -> int:
+    """
+    Creates a new test session using only questions the student has previously gotten wrong
+    (Outcome = 0) in the given subject and topics.
+    """
+    if not topics:
+        raise ValueError("At least one topic must be selected.")
+    if num_questions <= 0:
+        raise ValueError("Number of questions must be greater than 0.")
+        
+    conn = sqlite3.connect("student_helper.db")
+    
+    placeholders = ",".join(["?"] * len(topics))
+    query = f"""
+        SELECT q.Topic_Tag, q.Question_Text, q.Options, q.Correct_Answer, q.Difficulty_Level
+        FROM Questions q
+        JOIN Academic_Performance_Log a ON q.Question_ID = a.Question_ID
+        JOIN Syllabus_Topics s ON q.Topic_Tag = s.Topic_Name
+        WHERE a.Student_ID = ? AND a.Outcome = 0 AND s.Subject_Name = ?
+        AND q.Topic_Tag IN ({placeholders})
+        GROUP BY q.Question_Text
+    """
+    
+    params = [student_id, subject] + topics
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    if not rows:
+        raise RuntimeError(f"No previous mistakes found for the selected topics in {subject}.")
+        
+    wrong_questions = []
+    for r in rows:
+        wrong_questions.append({
+            'topic_tag': r[0],
+            'question': r[1],
+            'options': r[2], # already a json string
+            'correct_answer': r[3],
+            'difficulty': r[4]
+        })
+        
+    random.shuffle(wrong_questions)
+    wrong_questions = wrong_questions[:num_questions]
+    
+    conn = sqlite3.connect("student_helper.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(Test_ID) FROM Behavioural_Log")
+    max_id = cursor.fetchone()[0]
+    test_id = (max_id or 0) + 1
+    conn.close()
+    
+    create_session(student_id, test_id, sleep_hours, stress_level)
+    
+    conn = sqlite3.connect("student_helper.db")
+    cursor = conn.cursor()
+    for q in wrong_questions:
+        cursor.execute('''
+            INSERT INTO Questions (Student_ID, Test_ID, Topic_Tag, Question_Text, Options, Correct_Answer, Difficulty_Level, Was_Asked, Source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'revision')
+        ''', (
+            student_id,
+            test_id,
+            q['topic_tag'],
+            q['question'],
+            q['options'],
+            q['correct_answer'],
+            q['difficulty']
+        ))
+        
+    conn.commit()
+    conn.close()
+    
+    return test_id

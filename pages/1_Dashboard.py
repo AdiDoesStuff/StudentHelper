@@ -63,6 +63,33 @@ fig = px.bar(
 fig.update_layout(yaxis={'categoryorder':'total ascending'})
 st.plotly_chart(fig, use_container_width=True)
 
+# Section 2.5 - Subject Performance
+st.header("Subject Performance")
+conn = sqlite3.connect("student_helper.db")
+subject_acc_df = pd.read_sql_query(
+    """
+    SELECT st.Subject_Name, AVG(sp.Average_Accuracy) as Sub_Avg
+    FROM Student_Profile sp
+    JOIN Syllabus_Topics st ON sp.Topic_Tag = st.Topic_Name
+    WHERE sp.Student_ID = ?
+    GROUP BY st.Subject_Name
+    """, 
+    conn, params=(student_id,)
+)
+conn.close()
+
+if not subject_acc_df.empty:
+    num_cols = min(3, len(subject_acc_df))
+    cols = st.columns(num_cols)
+    for i, row in subject_acc_df.iterrows():
+        col = cols[i % num_cols]
+        acc_pct = (row["Sub_Avg"] * 100) if pd.notnull(row["Sub_Avg"]) else 0.0
+        col.metric(label=row["Subject_Name"], value=f"{acc_pct:.1f}%")
+else:
+    st.info("No subject data available.")
+
+st.markdown("---")
+
 # Section 3 - Topic Detail Table
 st.header("Detailed Topic Metrics")
 display_df = profile_df[["Topic_Tag", "Weakness_Index", "Average_Accuracy_Pct", "Last_Tested_Date", "Total_Sessions"]].copy()

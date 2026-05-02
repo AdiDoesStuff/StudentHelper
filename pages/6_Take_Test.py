@@ -24,8 +24,11 @@ if "current_question_index" not in st.session_state:
 if "test_answers" not in st.session_state:
     st.session_state["test_answers"] = []
 
+if "test_started" not in st.session_state:
+    st.session_state["test_started"] = False
+
 if "question_start_time" not in st.session_state:
-    st.session_state["question_start_time"] = time.time()
+    st.session_state["question_start_time"] = None
 
 if "test_complete" not in st.session_state:
     st.session_state["test_complete"] = False
@@ -65,10 +68,18 @@ if total_questions == 0:
     st.warning("No unasked questions found for this test. Maybe you already completed it?")
     if st.button("Start New Session"):
         st.session_state.clear()
-        st.switch_page("pages/4_Generate_Test.py")
+        st.switch_page("pages/5_Generate_Test.py")
     st.stop()
 
 if not st.session_state["test_complete"]:
+    if not st.session_state["test_started"]:
+        st.info("Your test is ready. The timer will begin once you start.")
+        if st.button("Start Test", type="primary"):
+            st.session_state["test_started"] = True
+            st.session_state["question_start_time"] = time.time()
+            st.rerun()
+        st.stop()
+
     current_index = st.session_state["current_question_index"]
     
     st.progress(current_index / total_questions)
@@ -171,8 +182,8 @@ else:
     col1, col2 = st.columns(2)
     with col1:
         if st.button("View Diagnostic Report →"):
-            st.switch_page("pages/6_Diagnostic_Report.py")
+            st.switch_page("pages/9_Diagnostic_Report.py")
     with col2:
         if st.button("Start New Session"):
             st.session_state.clear()
-            st.switch_page("pages/4_Generate_Test.py")
+            st.switch_page("pages/5_Generate_Test.py")

@@ -103,11 +103,15 @@ if st.button("Generate Test", type="primary"):
                 del st.session_state["loaded_questions"]
             if "test_answers" in st.session_state:
                 del st.session_state["test_answers"]
+            if "test_started" in st.session_state:
+                del st.session_state["test_started"]
+            if "question_start_time" in st.session_state:
+                del st.session_state["question_start_time"]
             st.session_state["current_question_index"] = 0
             st.session_state["test_complete"] = False
             
-            st.success("Test Generated Successfully! Redirecting...")
-            st.switch_page("pages/5_Take_Test.py")
+            st.success("Test Generated Successfully!")
+            st.page_link("pages/6_Take_Test.py", label="Take Test Now", icon="📝")
             
         except Exception as e:
             st.error(f"Error generating test: {e}")
