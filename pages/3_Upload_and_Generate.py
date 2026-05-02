@@ -5,11 +5,16 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from core.generator.pipeline import process_and_store_documents
+from core.ui import apply_theme, page_header
 
 st.set_page_config(page_title="Upload & Sort - AEGIS-MIND", layout="wide")
+apply_theme()
 
-st.title("Upload & Sort Material")
-st.markdown("Upload multiple PDFs and automatically sort their contents into your syllabus topics using local AI.")
+page_header(
+    "Upload & Sort Material",
+    "Upload PDFs and let local AI organize your notes into the syllabus topics you already mapped.",
+    "Document intelligence",
+)
 
 # Fetch available subjects
 @st.cache_data

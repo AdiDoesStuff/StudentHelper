@@ -18,18 +18,20 @@ from core.runner.evalify_importer import (
 )
 from core.analytics.preprocessing import PreprocessingPipeline
 from core.analytics.diagnostics import run_diagnostics
+from core.ui import apply_theme, page_header
 
 st.set_page_config(page_title="Import Evalify Test - AEGIS-MIND", layout="wide")
+apply_theme()
 
 # Run migration on page load to ensure new columns exist
 migrate_db()
 
 student_id = st.session_state.get("student_id", 1)
 
-st.title("📥 Import Evalify Test")
-st.markdown(
-    "Paste the JSON output from your **Evalify Tampermonkey exporter** to import "
-    "an externally-taken test into your AEGIS-MIND diagnostic profile."
+page_header(
+    "Import Evalify Test",
+    "Paste exported Evalify JSON, review topic tags, and merge external results into your diagnostic profile.",
+    "External test intake",
 )
 
 # ─── Step 0: Subject Selection ───

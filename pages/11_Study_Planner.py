@@ -3,8 +3,10 @@ import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
 from core.analytics.planner import generate_study_plan, _get_upcoming_test_instances
+from core.ui import apply_theme, page_header, divider
 
 st.set_page_config(page_title="Study Planner", page_icon="📅", layout="wide")
+apply_theme()
 
 DB_PATH = "student_helper.db"
 
@@ -40,8 +42,11 @@ def delete_test_schedule(schedule_id, subject_name, day_of_week):
     conn.close()
     st.rerun()
 
-st.title("📅 Personalized Study Planner")
-st.markdown("Plan your study schedule based on upcoming tests and your weak areas.")
+page_header(
+    "Personalized Study Planner",
+    "Connect recurring tests, upcoming calendar pressure, weak areas, and availability into an actionable study plan.",
+    "Plan the next move",
+)
 
 student_id = get_student_id()
 if not student_id:
@@ -106,7 +111,7 @@ if not schedules_df.empty:
 else:
     st.info("No recurring tests configured.")
 
-st.markdown("---")
+divider()
 
 # --- Calendar View (Native) ---
 st.subheader("🗓️ Next 14 Days")
@@ -157,7 +162,7 @@ else:
 
 conn.close()
 
-st.markdown("---")
+divider()
 
 # --- Study Plan View ---
 colA, colB = st.columns([3, 1])

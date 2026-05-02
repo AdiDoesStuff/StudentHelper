@@ -6,12 +6,18 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 from core.runner.agent import get_weakest_topic
+from core.ui import apply_theme, page_header, divider
 
 st.set_page_config(page_title="Dashboard - AEGIS-MIND", layout="wide")
+apply_theme()
 
 student_id = st.session_state.get("student_id", 1)
 
-st.title("Student Dashboard")
+page_header(
+    "Student Dashboard",
+    "Track your weakest topics, subject accuracy, and study history from one focused control room.",
+    "Performance overview",
+)
 
 conn = sqlite3.connect("student_helper.db")
 profile_df = pd.read_sql_query(
@@ -49,7 +55,7 @@ def color_rule(val):
     return "Low (<0.3)"
 
 profile_df["Severity"] = profile_df["Weakness_Index"].apply(color_rule)
-color_map = {"High (>0.6)": "red", "Medium (0.3-0.6)": "orange", "Low (<0.3)": "green"}
+color_map = {"High (>0.6)": "#ef4444", "Medium (0.3-0.6)": "#f59e0b", "Low (<0.3)": "#34d399"}
 
 fig = px.bar(
     profile_df, 
@@ -60,7 +66,13 @@ fig = px.bar(
     color_discrete_map=color_map,
     title="Weakness by Topic (Higher is worse)"
 )
-fig.update_layout(yaxis={'categoryorder':'total ascending'})
+fig.update_layout(
+    yaxis={'categoryorder':'total ascending'},
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(15,23,42,0.38)",
+    font_color="#e2e8f0",
+    title_font_color="#fee2e2",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # Section 2.5 - Subject Performance
@@ -88,7 +100,7 @@ if not subject_acc_df.empty:
 else:
     st.info("No subject data available.")
 
-st.markdown("---")
+divider()
 
 # Section 3 - Topic Detail Table
 st.header("Detailed Topic Metrics")

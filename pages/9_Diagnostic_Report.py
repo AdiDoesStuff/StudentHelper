@@ -9,12 +9,18 @@ import plotly.express as px
 from core.analytics.kurtosis_analysis import analyze_kurtosis
 from core.analytics.knowledge_graph import build_knowledge_graph, get_root_causes
 from core.analytics.diagnostics import get_student_correlation
+from core.ui import apply_theme, page_header
 
 st.set_page_config(page_title="Diagnostic Report - AEGIS-MIND", layout="wide")
+apply_theme()
 
 student_id = st.session_state.get("student_id", 1)
 
-st.title("Full Diagnostic Report")
+page_header(
+    "Full Diagnostic Report",
+    "Inspect weakness rankings, environmental patterns, root causes, and performance history in one place.",
+    "Learning diagnostics",
+)
 
 conn = sqlite3.connect("student_helper.db")
 query = """
@@ -63,13 +69,16 @@ diag_map = {
 }
 
 if kurtosis_results:
-    has_kurtosis = True
     for topic, data in kurtosis_results.items():
         label = data.get("Label", "N/A")
         kv = data.get("Kurtosis")
+        if kv is None or pd.isna(kv):
+            continue
+
+        has_kurtosis = True
         interpretation = diag_map.get(label, "Unknown")
         st.markdown(f"**{topic}**: {label}")
-        kv_display = f"{kv:.2f}" if kv is not None else "N/A"
+        kv_display = f"{kv:.2f}"
         st.caption(f"{interpretation} (Kurtosis: {kv_display})")
                 
 if not has_kurtosis:
@@ -137,6 +146,13 @@ if not history_df.empty:
     # Convert accuracy to percentage
     history_df["Accuracy %"] = history_df["Session_Accuracy"] * 100
     fig = px.line(history_df, x="Session_Date", y="Accuracy %", markers=True, title="Accuracy Over Time")
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(15,23,42,0.38)",
+        font_color="#e2e8f0",
+        title_font_color="#fee2e2",
+    )
+    fig.update_traces(line_color="#ef4444", marker_color="#22d3ee")
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("No performance history to plot.")

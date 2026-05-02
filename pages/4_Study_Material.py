@@ -7,10 +7,16 @@ import pandas as pd
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 
-st.set_page_config(page_title="Study Material - AEGIS-MIND", layout="wide")
+from core.ui import apply_theme, page_header, divider
 
-st.title("📚 Study Material")
-st.markdown("Review the study material you've uploaded, organized by topic.")
+st.set_page_config(page_title="Study Material - AEGIS-MIND", layout="wide")
+apply_theme()
+
+page_header(
+    "Study Material",
+    "Browse uploaded notes by subject and topic, with each stored chunk ready for review.",
+    "Your organized library",
+)
 
 # --- Database Fetching ---
 @st.cache_data
@@ -54,7 +60,7 @@ with col2:
 
 # --- Retrieval & Display ---
 if selected_subject and selected_topic:
-    st.markdown("---")
+    divider()
     st.subheader(f"Material for: {selected_topic}")
     
     with st.spinner("Fetching material from database..."):

@@ -5,13 +5,15 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from core.syllabus.syllabus_parser import parse_unit_text, store_syllabus, load_syllabus_edges
+from core.ui import apply_theme, page_header, divider
 
 st.set_page_config(page_title="Syllabus Mapping - AEGIS-MIND", layout="wide")
+apply_theme()
 
-st.title("Syllabus Mapping")
-st.markdown(
-    "Paste your syllabus content to automatically build a **prerequisite knowledge graph**. "
-    "Topics within each unit are chained in the order they appear."
+page_header(
+    "Syllabus Mapping",
+    "Paste your syllabus content and build a clean prerequisite graph from the order of your units and topics.",
+    "Knowledge structure",
 )
 
 # ─── Section 1: Input Form ────────────────────────────────────────────────────
@@ -31,7 +33,7 @@ num_units = st.number_input(
     step=1
 )
 
-st.markdown("---")
+divider()
 st.subheader("Paste Unit Content")
 st.caption(
     "Copy the syllabus text for each unit below. "
@@ -77,7 +79,7 @@ if st.button("Preview Parsed Topics"):
 
 # ─── Section 3: Save to Database ──────────────────────────────────────────────
 
-st.markdown("---")
+divider()
 if st.button("Save Syllabus Mapping", type="primary"):
     if not subject_name.strip():
         st.warning("Please enter a subject name.")
@@ -123,7 +125,7 @@ if st.button("Save Syllabus Mapping", type="primary"):
 
 # ─── Section 4: Current Syllabus Data ─────────────────────────────────────────
 
-st.markdown("---")
+divider()
 st.header("Currently Stored Syllabi")
 
 conn = sqlite3.connect("student_helper.db")

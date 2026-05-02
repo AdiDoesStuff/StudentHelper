@@ -1,8 +1,10 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+from core.ui import apply_theme, page_header, divider
 
 st.set_page_config(page_title="Study Availability", page_icon="🕒", layout="wide")
+apply_theme()
 
 DB_PATH = "student_helper.db"
 
@@ -21,8 +23,11 @@ def get_student_id():
         return row["Student_ID"]
     return None
 
-st.title("🕒 Study Availability")
-st.markdown("Set up your weekly study hours. This data is used to generate your personalized study plan.")
+page_header(
+    "Study Availability",
+    "Set the weekly hours you can realistically study so your planner stays useful, not imaginary.",
+    "Time setup",
+)
 
 student_id = get_student_id()
 if not student_id:
@@ -67,7 +72,7 @@ with st.form("add_availability_form"):
             st.warning("Availability slot already exists.")
         conn.close()
 
-st.markdown("---")
+divider()
 st.subheader("Your Current Availability")
 
 conn = get_db_connection()
