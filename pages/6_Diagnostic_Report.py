@@ -17,28 +17,39 @@ student_id = st.session_state.get("student_id", 1)
 st.title("Full Diagnostic Report")
 
 conn = sqlite3.connect("student_helper.db")
-profile_df = pd.read_sql_query(
-    "SELECT * FROM Student_Profile WHERE Student_ID = ? ORDER BY Weakness_Index DESC",
-    conn, params=(student_id,)
-)
+query = """
+    SELECT sp.*, st.Subject_Name 
+    FROM Student_Profile sp
+    LEFT JOIN Syllabus_Topics st ON sp.Topic_Tag = st.Topic_Name
+    WHERE sp.Student_ID = ? 
+    ORDER BY st.Subject_Name ASC, sp.Weakness_Index DESC
+"""
+profile_df = pd.read_sql_query(query, conn, params=(student_id,))
 
 # Section 1 - Weakness Index Rankings
 st.header("Weakness Index Rankings")
 if profile_df.empty:
     st.info("No data available.")
 else:
-    for _, row in profile_df.iterrows():
-        topic = row["Topic_Tag"]
-        wk_idx = row["Weakness_Index"]
+    profile_df["Subject_Name"] = profile_df["Subject_Name"].fillna("Other / Uncategorized")
+    
+    subjects = profile_df["Subject_Name"].unique()
+    for subject in subjects:
+        st.subheader(f"📚 {subject}")
+        subject_df = profile_df[profile_df["Subject_Name"] == subject]
         
-        if wk_idx > 0.6:
-            color = "🔴"
-        elif wk_idx > 0.3:
-            color = "🟠"
-        else:
-            color = "🟢"
+        for _, row in subject_df.iterrows():
+            topic = row["Topic_Tag"]
+            wk_idx = row["Weakness_Index"]
             
-        st.markdown(f"{color} **{topic}** (Index: {wk_idx:.2f})")
+            if wk_idx > 0.6:
+                color = "🔴"
+            elif wk_idx > 0.3:
+                color = "🟠"
+            else:
+                color = "🟢"
+                
+            st.markdown(f"&nbsp;&nbsp; {color} **{topic}** (Index: {wk_idx:.2f})")
 
 # Section 2 - Kurtosis Diagnosis Per Topic
 st.header("Kurtosis Diagnosis")

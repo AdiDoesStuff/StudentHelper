@@ -47,11 +47,24 @@ def classify_questions(questions: list, syllabus_topics: list) -> list:
     return classify_chunks_batch(question_texts, syllabus_topics, threshold=0.2)
 
 
-def _get_syllabus_topics() -> list:
-    """Fetch all distinct topic names from the Syllabus_Topics table."""
+def _get_syllabus_subjects() -> list:
+    """Fetch all distinct subject names from the Syllabus_Topics table."""
     conn = sqlite3.connect("student_helper.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT Topic_Name FROM Syllabus_Topics ORDER BY Topic_Name")
+    cursor.execute("SELECT DISTINCT Subject_Name FROM Syllabus_Topics ORDER BY Subject_Name")
+    subjects = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return subjects
+
+
+def _get_syllabus_topics(subject_name: str = None) -> list:
+    """Fetch all distinct topic names from the Syllabus_Topics table. Optionally filter by subject_name."""
+    conn = sqlite3.connect("student_helper.db")
+    cursor = conn.cursor()
+    if subject_name:
+        cursor.execute("SELECT DISTINCT Topic_Name FROM Syllabus_Topics WHERE Subject_Name = ? ORDER BY Topic_Name", (subject_name,))
+    else:
+        cursor.execute("SELECT DISTINCT Topic_Name FROM Syllabus_Topics ORDER BY Topic_Name")
     topics = [row[0] for row in cursor.fetchall()]
     conn.close()
     return topics

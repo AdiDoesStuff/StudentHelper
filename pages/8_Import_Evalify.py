@@ -14,6 +14,7 @@ from core.runner.evalify_importer import (
     classify_questions,
     import_evalify_test,
     _get_syllabus_topics,
+    _get_syllabus_subjects,
 )
 from core.analytics.preprocessing import PreprocessingPipeline
 from core.analytics.diagnostics import run_diagnostics
@@ -30,6 +31,15 @@ st.markdown(
     "Paste the JSON output from your **Evalify Tampermonkey exporter** to import "
     "an externally-taken test into your AEGIS-MIND diagnostic profile."
 )
+
+# ─── Step 0: Subject Selection ───
+st.header("0. Select Subject")
+subjects = _get_syllabus_subjects()
+if not subjects:
+    st.warning("No subjects found in the database. Please go to 'Syllabus Mapping' to add them.")
+    st.stop()
+
+selected_subject = st.selectbox("Select the subject for this test", options=subjects)
 
 # ─── Step 1: JSON Input ───
 st.header("1. Paste Exported JSON")
@@ -109,7 +119,7 @@ stress_level = st.slider(
 # ─── Step 3: Auto Topic Tagging via Embeddings ───
 st.header("3. Topic Tagging (AI-Assisted)")
 
-syllabus_topics = _get_syllabus_topics()
+syllabus_topics = _get_syllabus_topics(selected_subject)
 
 if not syllabus_topics:
     st.warning(
@@ -118,7 +128,7 @@ if not syllabus_topics:
     )
 
 # Auto-classify on button click (cached in session state)
-state_key = f"topic_tags_{external_test_id}"
+state_key = f"topic_tags_{external_test_id}_{selected_subject}"
 
 if state_key not in st.session_state:
     if syllabus_topics:
