@@ -1,17 +1,30 @@
-google-genai==1.72.0
+# CORE WEB UI
+streamlit==1.56.0
+pandas==3.0.2
+numpy==2.4.4
+plotly==6.7.0
+
+# DATABASE & VECTOR STORE
 langchain-chroma==1.1.0
 langchain-core==1.2.28
-langchain-google-genai==4.2.1
 langchain-text-splitters==1.1.1
-networkx==3.6.1
-numpy==2.4.4
-pandas==3.0.2
-plotly==6.7.0
-PyMuPDF==1.27.2.2
+
+# AI PROVIDERS & MODELS
+langchain-google-genai==4.2.1
+langchain-huggingface==1.2.2
+groq==1.2.0
 python-dotenv==1.2.2
+
+# LOCAL EMBEDDINGS & NLP (Heavy)
+sentence-transformers==5.4.1
+scikit-learn==1.8.0
+torch==2.11.0
+torchvision==0.26.0
+transformers==5.6.2
+
+# ANALYTICS & GRAPHING
+networkx==3.6.1
 scipy==1.17.1
-streamlit==1.56.0
-sentence-transformers
-scikit-learn
-torchvision
-groq
+
+# DOCUMENT PROCESSING
+PyMuPDF==1.27.2.2
