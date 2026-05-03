@@ -33,10 +33,10 @@ if !ERRORLEVEL! neq 0 (
 )
 
 echo [3/4] Upgrading pip...
-python -m pip install --upgrade pip
+".venv\Scripts\python.exe" -m pip install --upgrade pip
 
 echo [4/4] Installing requirements from requirements.txt...
-pip install -r requirements.txt
+".venv\Scripts\pip.exe" install -r requirements.txt
 if !ERRORLEVEL! neq 0 (
     echo [ERROR] Failed to install requirements.
     pause
