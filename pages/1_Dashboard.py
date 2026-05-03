@@ -20,10 +20,29 @@ page_header(
 )
 
 conn = sqlite3.connect("student_helper.db")
-profile_df = pd.read_sql_query(
-    "SELECT * FROM Student_Profile WHERE Student_ID = ? ORDER BY Weakness_Index DESC",
-    conn, params=(student_id,)
-)
+# Join with logs to get accurate Total_Sessions and Last_Tested_Date
+query = """
+    SELECT 
+        sp.Topic_Tag, 
+        sp.Weakness_Index, 
+        sp.Average_Accuracy,
+        COALESCE(metrics.Real_Last_Tested, sp.Last_Tested_Date) as Last_Tested_Date,
+        COALESCE(metrics.Real_Total_Sessions, sp.Total_Sessions) as Total_Sessions
+    FROM Student_Profile sp
+    LEFT JOIN (
+        SELECT 
+            apl.Topic_Tag, 
+            MAX(bl.Session_Date) as Real_Last_Tested, 
+            COUNT(DISTINCT apl.Test_ID) as Real_Total_Sessions
+        FROM Academic_Performance_Log apl
+        JOIN Behavioural_Log bl ON apl.Test_ID = bl.Test_ID
+        WHERE apl.Student_ID = ?
+        GROUP BY apl.Topic_Tag
+    ) metrics ON sp.Topic_Tag = metrics.Topic_Tag
+    WHERE sp.Student_ID = ?
+    ORDER BY sp.Weakness_Index DESC
+"""
+profile_df = pd.read_sql_query(query, conn, params=(student_id, student_id))
 conn.close()
 
 # Section 1 - Recommended Focus Topic

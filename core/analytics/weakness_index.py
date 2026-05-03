@@ -21,11 +21,18 @@ def compute_weakness():
     conn.commit()
 
     # 1. Load data and filter out lucky guesses
+    # Also fetch Last_Tested_Date and Total_Sessions from logs
     query = """
-    SELECT Student_ID, Topic_Tag, AVG(Outcome) as Accuracy
-    FROM Academic_Performance_Log
-    WHERE Is_Lucky_Guess != 1 OR Is_Lucky_Guess IS NULL
-    GROUP BY Student_ID, Topic_Tag
+    SELECT 
+        apl.Student_ID, 
+        apl.Topic_Tag, 
+        AVG(apl.Outcome) as Accuracy,
+        MAX(bl.Session_Date) as Last_Tested,
+        COUNT(DISTINCT apl.Test_ID) as Total_Sessions
+    FROM Academic_Performance_Log apl
+    JOIN Behavioural_Log bl ON apl.Test_ID = bl.Test_ID
+    WHERE apl.Is_Lucky_Guess != 1 OR apl.Is_Lucky_Guess IS NULL
+    GROUP BY apl.Student_ID, apl.Topic_Tag
     """
     accuracy_df = pd.read_sql_query(query, conn)
 
@@ -56,11 +63,16 @@ def compute_weakness():
     for _, row in merged.iterrows():
         cursor.execute("""
             UPDATE Student_Profile
-            SET Weakness_Index = ?, Average_Accuracy = ?
+            SET Weakness_Index = ?, 
+                Average_Accuracy = ?,
+                Last_Tested_Date = ?,
+                Total_Sessions = ?
             WHERE Student_ID = ? AND Topic_Tag = ?
         """, (
             float(row['Weakness_Index']),
             float(row['Accuracy']),
+            row['Last_Tested'],
+            int(row['Total_Sessions']),
             int(row['Student_ID']),
             row['Topic_Tag']
         ))
